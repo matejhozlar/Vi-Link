@@ -5,10 +5,42 @@ dotenv.config({ quiet: true });
 
 /**
  * Zod schema defining structure and validation rules for environment variables
+ * // Server
  * @property {number} PORT - Server port number (must be a positive integer, default 5000)
+ * @property {string} NODE_ENV - Application environment (development, production, test)
+ * // Discord
+ * @property {string} DISCORD_GUILD_ID - Discord server/guild ID (must be numeric snowflake)
+ * @property {string} DISCORD_BOT_TOKEN - Discord bot authentication token
+ * @property {string} DISCORD_BOT_ID - Discord bot application/client ID (must be numeric snowflake)
  */
 const envSchema = z.object({
+  // Server
   PORT: z.coerce.number().int().positive().default(5000),
+  NODE_ENV: z
+    .enum(["development", "production", "test"])
+    .default("development"),
+  // Discord
+  DISCORD_GUILD_ID: z
+    .string()
+    .min(1, "Guild ID is required")
+    .regex(
+      /^\{17,19}$/,
+      "Guild ID must be a valid Discord snowflake (17-19 digits)"
+    ),
+  DISCORD_BOT_TOKEN: z
+    .string()
+    .min(1, "Bot token is required")
+    .regex(
+      /^[\w-]{24}\.[\w-]{6}\.[\w-]{27,}$/,
+      "Bot token must be a valid Discord token format"
+    ),
+  DISCORD_BOT_ID: z
+    .string()
+    .min(1, "Bot ID is required")
+    .regex(
+      /^\d{17,19}$/,
+      "Bot ID must be a valid Discord snowflake (17-19 digits)"
+    ),
 });
 
 /**
@@ -53,3 +85,21 @@ function validateEnv(): Env {
  * to validated environment variables throughout the application
  */
 export const env = validateEnv();
+
+export const envMode = {
+  /**
+   * True when NODE_ENV is 'development'
+   * Used to enable development-specific features and logging
+   */
+  isDev: env.NODE_ENV === "development",
+  /**
+   * True when NODE_ENV is 'production'
+   * Used to enable production optimizations and disable debug features
+   */
+  isProd: env.NODE_ENV === "development",
+  /**
+   * True when NODE_ENV = 'test'
+   * Used to enable test-specific configuration and mocking
+   */
+  isTest: env.NODE_ENV === "test",
+} as const;
