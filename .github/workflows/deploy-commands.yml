@@ -1,10 +1,6 @@
 name: Deploy Discord Commands
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - "server/src/discord/bots/main/interactions/slash-commands/**"
   workflow_dispatch:
 
 jobs:
