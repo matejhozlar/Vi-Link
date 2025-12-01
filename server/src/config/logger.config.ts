@@ -3,7 +3,7 @@ export interface LoggerConfig {
   keepDays: number;
 }
 
-const config = {
+const config: LoggerConfig = {
   /**
    * Root directory where daily log folders/files are written
    * Relative paths are resolved from the process working directory
@@ -14,6 +14,6 @@ const config = {
    * Older folders beyond this threshold may be deleted
    */
   keepDays: 7,
-} satisfies LoggerConfig;
+};
 
 export default config;
