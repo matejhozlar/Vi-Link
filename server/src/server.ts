@@ -2,6 +2,7 @@ import { env } from "@/config/env/env.config";
 import "./logger.global";
 import http from "node:http";
 import { createApp } from "./app";
+import mainBot from "./discord/bots";
 
 const PORT = env.PORT;
 
@@ -75,3 +76,5 @@ function start(): void {
 }
 
 start();
+
+logger.info(mainBot);
