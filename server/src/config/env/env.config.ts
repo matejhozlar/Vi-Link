@@ -12,6 +12,13 @@ dotenv.config({ quiet: true });
  * @property {string} DISCORD_GUILD_ID - Discord server/guild ID (must be numeric snowflake)
  * @property {string} DISCORD_BOT_TOKEN - Discord bot authentication token
  * @property {string} DISCORD_BOT_ID - Discord bot application/client ID (must be numeric snowflake)
+ * // Database
+ * // Minecraft
+ * @property {string} MC_MYSQL_HOST - MySQL host for Minecraft database
+ * @property {string} MC_MYSQL_PORT - MySQL port for Minecraft database
+ * @property {string} MC_MYSQL_USER - MySQL user for Minecraft database
+ * @property {string} MC_MYSQL_PASSWORD - MySQL password for Minecraft database
+ * @property {string} MC_MYSQL_DATABASE - MySQL database name for Minecraft
  */
 const envSchema = z.object({
   // Server
@@ -30,10 +37,7 @@ const envSchema = z.object({
   DISCORD_BOT_TOKEN: z
     .string()
     .min(1, "Bot token is required")
-    .regex(
-      /^[\w\-\.]+$/,
-      "Bot token must be a valid Discord token format"
-    ),
+    .regex(/^[\w\-\.]+$/, "Bot token must be a valid Discord token format"),
   DISCORD_BOT_ID: z
     .string()
     .min(1, "Bot ID is required")
@@ -41,6 +45,15 @@ const envSchema = z.object({
       /^\d{17,19}$/,
       "Bot ID must be a valid Discord snowflake (17-19 digits)"
     ),
+  // Database
+  // Minecraft (MySQL)
+  MC_MYSQL_HOST: z.string().min(1, "Minecraft MySQL host is required"),
+  MC_MYSQL_PORT: z.coerce.number().int().positive().default(3306),
+  MC_MYSQL_USER: z.string().min(1, "Minecraft MySQL user is required"),
+  MC_MYSQL_PASSWORD: z.string().min(1, "Minecraft MySQL password is required"),
+  MC_MYSQL_DATABASE: z
+    .string()
+    .min(1, " Minecraft MySQL database name is required"),
 });
 
 /**
