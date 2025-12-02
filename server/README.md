@@ -69,7 +69,7 @@ docker-compose up -d
 ```
 server/src/
 ├── discord/
-│   ├── bots/main/interactions/slash-commands/  # Add commands here
+│   ├── bots/main/interactions/slash-commands/   # Add commands here
 │   ├── embeds/                                  # Embed builders
 │   └── utils/cooldown/                          # Cooldown system
 ├── config/                                      # Configuration
