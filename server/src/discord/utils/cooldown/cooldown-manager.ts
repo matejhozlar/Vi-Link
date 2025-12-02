@@ -8,11 +8,26 @@
 export type CooldownType = "user" | "global" | "channel" | "guild";
 
 /**
+ * Interaction context required for cooldown operations
+ */
+export interface CooldownContext {
+  userId: string;
+  channelId: string;
+  guildId: string | null;
+}
+
+/**
  * Internal cooldown entry stored in the manager
  */
 interface CooldownEntry {
   expiresAt: number;
   userId?: string;
+
+  metadata?: {
+    commandName: string;
+    type: CooldownType;
+    startedAt: number;
+  };
 }
 
 /**
@@ -25,6 +40,16 @@ interface CooldownConfig {
   type: CooldownType;
   /** Optional custom cooldown message to display to users */
   message?: string;
+}
+
+/**
+ * Statistics about active cooldowns
+ */
+export interface CooldownStats {
+  totalCooldowns: number;
+  totalCommands: number;
+  byCommand: Record<string, number>;
+  byType?: Record<CooldownType, number>;
 }
 
 /**
@@ -41,7 +66,10 @@ export class CooldownManager {
    *
    * @param commandName - Name of the command
    * @param type - Type of cooldown scope
-   * @param interaction - Interaction context containing userId, channelId, and guildId
+   * @param interaction - Interaction context
+   * @param interaction.userId - Discord user ID to generate the cooldown for
+   * @param interaction.channelId - Discord channel ID to generate the cooldown for
+   * @param interaction.guildId - Optional global guild cooldown for a specific command
    * @returns Unique key string for the cooldown entry
    *
    * @example
@@ -51,7 +79,7 @@ export class CooldownManager {
   private getKey(
     commandName: string,
     type: CooldownType,
-    interaction: { userId: string; channelId: string; guildId: string | null }
+    interaction: CooldownContext
   ): string {
     switch (type) {
       case "user":
@@ -75,6 +103,9 @@ export class CooldownManager {
    * @param commandName - Name of the command to check
    * @param cfg - Cooldown configuration
    * @param interaction - Interaction context
+   * @param interaction.userId - Discord user ID to check for
+   * @param interaction.channelId - Discord channel ID to check for
+   * @param interaction.guildId - Discord guild ID to check for
    * @returns Remaining cooldown time in seconds, or null if not on cooldown
    *
    * @example
@@ -86,7 +117,7 @@ export class CooldownManager {
   public check(
     commandName: string,
     cfg: CooldownConfig,
-    interaction: { userId: string; channelId: string; guildId: string | null }
+    interaction: CooldownContext
   ): number | null {
     const key = this.getKey(commandName, cfg.type, interaction);
 
@@ -120,11 +151,14 @@ export class CooldownManager {
    * @param commandName - Name of the command to set cooldown for
    * @param cfg - Cooldown configuration
    * @param interaction - Interaction context
+   * @param interaction.userId - Discord user ID to set the cooldown for
+   * @param interaction.channelId - Discord channel ID to set the cooldown for
+   * @param interaction.guildId - Discord guild ID to set cooldown in
    */
   public set(
     commandName: string,
     cfg: CooldownConfig,
-    interaction: { userId: string; channelId: string; guildId: string | null }
+    interaction: CooldownContext
   ): void {
     const key = this.getKey(commandName, cfg.type, interaction);
 
@@ -156,12 +190,15 @@ export class CooldownManager {
    * @param commandName - Name of the command
    * @param type - Type of cooldown scope
    * @param interaction - Interaction context
+   * @param interaction.userId - Discord user ID to reset cooldowns for
+   * @param interaction.channelId - Discord channel ID to reset cooldowns for
+   * @param interaction.guildId - Discord guild ID to reset the cooldowns in
    * @returns True if a cooldown was reset, false if none existed
    */
   public reset(
     commandName: string,
     type: CooldownType,
-    interaction: { userId: string; channelId: string; guildId: string | null }
+    interaction: CooldownContext
   ): boolean {
     const key = this.getKey(commandName, type, interaction);
     const timestamps = this.cooldowns.get(commandName);
@@ -217,12 +254,15 @@ export class CooldownManager {
    * @param commandName - Name of the command
    * @param type - Type of cooldown scope
    * @param interaction - Interaction context
+   * @param interaction.userId - Discord user ID to get remaining cooldown for
+   * @param interaction.channelId - Discord channel ID to get remaining cooldown for
+   * @param interaction.guildId - Discord guild ID to get remaining cooldown in
    * @returns Remaining cooldown time in seconds, or null if not on cooldown
    */
   public getRemaining(
     commandName: string,
     type: CooldownType,
-    interaction: { userId: string; channelId: string; guildId: string | null }
+    interaction: CooldownContext
   ): number | null {
     return this.check(commandName, { duration: 0, type }, interaction);
   }
@@ -258,11 +298,13 @@ export class CooldownManager {
       commandStats[commandName] = count;
     });
 
-    return {
+    const stats: CooldownStats = {
       totalCooldowns,
       totalCommands: this.cooldowns.size,
       byCommand: commandStats,
     };
+
+    return stats;
   }
 }
 

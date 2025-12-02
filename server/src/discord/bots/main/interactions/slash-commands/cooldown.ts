@@ -115,19 +115,7 @@ export async function execute(
     case "stats": {
       const stats = cooldownManager.getStats();
 
-      const embed = createEmbed()
-        .title("📊 Cooldown Statistics")
-        .color(EmbedColors.Info)
-        .field("Total Active Cooldowns", stats.totalCooldowns.toString(), true)
-        .field("Commands with Cooldowns", stats.totalCommands.toString(), true);
-
-      if (Object.keys(stats.byCommand).length > 0) {
-        const commandList = Object.entries(stats.byCommand)
-          .map(([cmd, count]) => `\`/${cmd}\`: ${count}`)
-          .join("\n");
-
-        embed.field("By Command", commandList || "None");
-      }
+      const embed = EmbedPresets.commands.cooldownStats(stats);
 
       await interaction.reply({ embeds: [embed.build()] });
       break;

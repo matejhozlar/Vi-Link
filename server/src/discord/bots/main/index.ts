@@ -1,6 +1,6 @@
 import { Client, GatewayIntentBits, Partials } from "discord.js";
-import { loadCommandHandlers } from "./main/loaders/command-loader";
-import { registerInteractionHandler } from "./main/handlers/interaction-handler";
+import { loadCommandHandlers } from "./loaders/command-loader";
+import { registerInteractionHandler } from "./handlers/interaction-handler";
 import config from "@/config";
 
 const BOT_TOKEN = config.discord.bots.main.token;
