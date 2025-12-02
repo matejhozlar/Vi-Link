@@ -24,14 +24,14 @@ const envSchema = z.object({
     .string()
     .min(1, "Guild ID is required")
     .regex(
-      /^\{17,19}$/,
+      /^\d{17,19}$/,
       "Guild ID must be a valid Discord snowflake (17-19 digits)"
     ),
   DISCORD_BOT_TOKEN: z
     .string()
     .min(1, "Bot token is required")
     .regex(
-      /^[\w-]{24}\.[\w-]{6}\.[\w-]{27,}$/,
+      /^[\w\-\.]+$/,
       "Bot token must be a valid Discord token format"
     ),
   DISCORD_BOT_ID: z
@@ -96,7 +96,7 @@ export const envMode = {
    * True when NODE_ENV is 'production'
    * Used to enable production optimizations and disable debug features
    */
-  isProd: env.NODE_ENV === "development",
+  isProd: env.NODE_ENV === "production",
   /**
    * True when NODE_ENV = 'test'
    * Used to enable test-specific configuration and mocking

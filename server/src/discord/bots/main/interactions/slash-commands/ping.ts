@@ -1,5 +1,17 @@
 import { EmbedPresets } from "@/discord/embeds";
-import { ChatInputCommandInteraction } from "discord.js";
+import { ChatInputCommandInteraction, SlashCommandBuilder } from "discord.js";
+
+export const data = new SlashCommandBuilder()
+  .setName("ping")
+  .setDescription("Check bot latency");
+
+export const cooldown = {
+  duration: 5,
+  type: "user" as const,
+  message: "Please wait before checking ping again!",
+};
+
+export const prodOnly = false;
 
 export async function execute(
   interaction: ChatInputCommandInteraction

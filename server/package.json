@@ -15,7 +15,7 @@
     "util:env-find": "node src/scripts/env/env-gen.js",
     "util:import-find": "node src/scripts/dependency/import-find.js",
     "util:schema-info": "node src/scripts/db/get-table-info.js",
-    "util:deploy-commands": "node src/discord/deployer/deploy-commands.js",
+    "util:deploy-commands": "tsx src/discord/deployer/deploy-commands.ts",
     "test": "vitest run"
   },
   "keywords": [],

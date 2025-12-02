@@ -37,6 +37,8 @@ export const data = new SlashCommandBuilder()
     sub.setName("stats").setDescription("View cooldown statistics")
   );
 
+export const prodOnly = false;
+
 export async function execute(
   interaction: ChatInputCommandInteraction
 ): Promise<void> {

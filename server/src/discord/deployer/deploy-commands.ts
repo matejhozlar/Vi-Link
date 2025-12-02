@@ -2,8 +2,10 @@ import config from "@/config";
 import {
   RESTPostAPIApplicationCommandsJSONBody,
   SlashCommandBuilder,
+  SlashCommandSubcommandsOnlyBuilder,
   REST,
   Routes,
+  PermissionFlagsBits,
 } from "discord.js";
 
 const BOT_TOKEN = config.discord.bots.main.token;
@@ -13,7 +15,42 @@ const GUILD_ID = config.discord.guild.id;
 /**
  * Array of SlashCommandBuilder instances defining bot commands
  */
-const commandBuilders: SlashCommandBuilder[] = [];
+const commandBuilders: (
+  | SlashCommandBuilder
+  | SlashCommandSubcommandsOnlyBuilder
+)[] = [
+  new SlashCommandBuilder().setName("ping").setDescription("Check bot latency"),
+
+  new SlashCommandBuilder()
+    .setName("cooldown")
+    .setDescription("Manage command cooldowns")
+    .setDefaultMemberPermissions(PermissionFlagsBits.Administrator)
+    .addSubcommand((sub) =>
+      sub
+        .setName("reset")
+        .setDescription("Reset cooldown for a user")
+        .addUserOption((opt) =>
+          opt
+            .setName("user")
+            .setDescription("User to reset cooldowns for")
+            .setRequired(true)
+        )
+    )
+    .addSubcommand((sub) =>
+      sub
+        .setName("reset-command")
+        .setDescription("Reset all cooldowns for a specific command")
+        .addStringOption((opt) =>
+          opt
+            .setName("command")
+            .setDescription("Command name to reset")
+            .setRequired(true)
+        )
+    )
+    .addSubcommand((sub) =>
+      sub.setName("stats").setDescription("View cooldown statistics")
+    ),
+];
 
 /**
  * JSON representation of slash commands ready for API submission
