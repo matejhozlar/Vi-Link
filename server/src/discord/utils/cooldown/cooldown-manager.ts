@@ -1,21 +1,52 @@
+/**
+ * Cooldown scope types that determine how cooldowns are applied
+ * - "user": Per-user cooldown (same user, any channel/guild)
+ * - "global": Global cooldown (affects all users)
+ * - "channel": Per-channel cooldown (any user in same channel)
+ * - "guild": Per-guild cooldown (any user in same guild, falls back to user if no guild)
+ */
 export type CooldownType = "user" | "global" | "channel" | "guild";
 
+/**
+ * Internal cooldown entry stored in the manager
+ */
 interface CooldownEntry {
   expiresAt: number;
   userId?: string;
 }
 
+/**
+ * Configuration for command cooldowns
+ */
 interface CooldownConfig {
+  /** Cooldown duration in seconds */
   duration: number;
+  /** Type of cooldown scope */
   type: CooldownType;
+  /** Optional custom cooldown message to display to users */
   message?: string;
 }
 
+/**
+ * Manages command cooldowns with support for multiple cooldown types
+ *
+ * Supports user-based, global, channel-based, and guild-based cooldowns.
+ * Automatically cleans up expired cooldowns using setTimeout.
+ */
 export class CooldownManager {
   private cooldowns = new Map<string, Map<string, CooldownEntry>>();
 
   /**
-   * Generates a unique key based on cooldown
+   * Generates a unique cooldown key based on command name and cooldown type
+   *
+   * @param commandName - Name of the command
+   * @param type - Type of cooldown scope
+   * @param interaction - Interaction context containing userId, channelId, and guildId
+   * @returns Unique key string for the cooldown entry
+   *
+   * @example
+   * getKey("ping", "user", { userId: "123", ... }) // "ping:user:123"
+   * getKey("announcement", "global", { ... }) // "announcement:global"
    */
   private getKey(
     commandName: string,
@@ -39,8 +70,18 @@ export class CooldownManager {
   }
 
   /**
-   * Check if command is on cooldown
+   * Checks if a command is currently on cooldown
+   *
+   * @param commandName - Name of the command to check
+   * @param cfg - Cooldown configuration
+   * @param interaction - Interaction context
    * @returns Remaining cooldown time in seconds, or null if not on cooldown
+   *
+   * @example
+   * const remaining = check("ping", config, interaction);
+   * if (remaining !== null) {
+   *   console.log(`Wait ${remaining} seconds`);
+   * }
    */
   public check(
     commandName: string,
@@ -70,6 +111,16 @@ export class CooldownManager {
     return null;
   }
 
+  /**
+   * Sets a cooldown for a command
+   *
+   * Creates a cooldown entry that will automatically expire after the configured duration.
+   * Uses setTimeout to clean up the entry when it expires.
+   *
+   * @param commandName - Name of the command to set cooldown for
+   * @param cfg - Cooldown configuration
+   * @param interaction - Interaction context
+   */
   public set(
     commandName: string,
     cfg: CooldownConfig,
@@ -99,6 +150,14 @@ export class CooldownManager {
     }, cfg.duration * 1000);
   }
 
+  /**
+   * Resets a specific cooldown entry
+   *
+   * @param commandName - Name of the command
+   * @param type - Type of cooldown scope
+   * @param interaction - Interaction context
+   * @returns True if a cooldown was reset, false if none existed
+   */
   public reset(
     commandName: string,
     type: CooldownType,
@@ -115,10 +174,22 @@ export class CooldownManager {
     return false;
   }
 
+  /**
+   * Resets all cooldowns for a specific command
+   *
+   * @param commandName - Name of the command to reset
+   * @returns True if the command had cooldowns to reset, false otherwise
+   */
   public resetCommand(commandName: string): boolean {
     return this.cooldowns.delete(commandName);
   }
 
+  /**
+   * Resets all cooldowns for a specific user across all commands
+   *
+   * @param userId - Discord user ID
+   * @returns Number of cooldowns that were reset
+   */
   public resetUser(userId: string): number {
     let count = 0;
 
@@ -139,7 +210,14 @@ export class CooldownManager {
   }
 
   /**
-   * Get remaining cooldown for debugging/admin purposes
+   * Gets remaining cooldown time without affecting the cooldown state
+   *
+   * Useful for debugging or admin commands to check cooldown status.
+   *
+   * @param commandName - Name of the command
+   * @param type - Type of cooldown scope
+   * @param interaction - Interaction context
+   * @returns Remaining cooldown time in seconds, or null if not on cooldown
    */
   public getRemaining(
     commandName: string,
@@ -149,10 +227,27 @@ export class CooldownManager {
     return this.check(commandName, { duration: 0, type }, interaction);
   }
 
+  /**
+   * Gets the internal cooldowns map (for debugging/inspection)
+   *
+   * @returns Map of command names to their cooldown entries
+   */
   public getAllCooldowns(): Map<string, Map<string, CooldownEntry>> {
     return this.cooldowns;
   }
 
+  /**
+   * Gets statistics about active cooldowns
+   *
+   * @returns Object containing:
+   *   - totalCooldowns: Total number of active cooldown entries
+   *   - totalCommands: Number of commands with active cooldowns
+   *   - byCommand: Object mapping command names to their cooldown counts
+   *
+   * @example
+   * const stats = getStats();
+   * logger.info(`${stats.totalCooldowns} active cooldowns across ${stats.totalCommands} commands`);
+   */
   public getStats() {
     let totalCooldowns = 0;
     const commandStats: Record<string, number> = {};
@@ -171,4 +266,7 @@ export class CooldownManager {
   }
 }
 
+/**
+ * Singleton instance of the cooldown manager
+ */
 export const cooldownManager = new CooldownManager();

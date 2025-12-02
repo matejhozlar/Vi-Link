@@ -7,6 +7,16 @@ import { EmbedPresets, createEmbed } from "@/discord/embeds";
 import { cooldownManager } from "@/discord/utils/cooldown/cooldown-manager";
 import { EmbedColors } from "@/discord/embeds/colors";
 
+/**
+ * Slash command definition for the cooldown management command
+ *
+ * Allows administrators to manage command cooldowns with three subcommands:
+ * - reset: Reset all cooldowns for a specific user
+ * - reset-command: Reset all cooldowns for a specific command
+ * - stats: View statistics about active cooldowns
+ *
+ * Requires Administrator permissions to use
+ */
 export const data = new SlashCommandBuilder()
   .setName("cooldown")
   .setDescription("Manage command cooldowns")
@@ -37,8 +47,34 @@ export const data = new SlashCommandBuilder()
     sub.setName("stats").setDescription("View cooldown statistics")
   );
 
+/**
+ * Whether this command should only be available in production
+ * Set to false to allow usage in development environments
+ */
 export const prodOnly = false;
 
+/**
+ * Executes the cooldown management command
+ *
+ * Handles three subcommands:
+ * 1. reset - Resets all cooldowns for a specific user and displays the count
+ * 2. reset-command - Resets all cooldowns for a specific command
+ * 3. stats - Displays statistics about active cooldowns including:
+ *    - Total number of active cooldowns
+ *    - Number of commands with cooldowns
+ *    - Breakdown by command name
+ *
+ * @param interaction - The chat input command interaction
+ * @returns Promise that resolves when the command execution is complete
+ *
+ * @example
+ * // User runs: /cooldown reset @user
+ * // Bot responds: "Reset 3 cooldown(s) for username#1234"
+ *
+ * @example
+ * // User runs: /cooldown stats
+ * // Bot displays embed with cooldown statistics
+ */
 export async function execute(
   interaction: ChatInputCommandInteraction
 ): Promise<void> {

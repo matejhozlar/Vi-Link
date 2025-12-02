@@ -10,7 +10,10 @@ import { cooldownManager } from "@/discord/utils/cooldown/cooldown-manager";
 import { EmbedPresets } from "@/discord/embeds";
 
 /**
- * Format seconds into a human-readable string
+ * Formats a cooldown duration in seconds into a human-readable string
+ *
+ * @param seconds - The cooldown duration in seconds
+ * @returns Formatted string (e.g., "5.0 second(s)", "2 minute(s) and 30 second(s)", "1 hour(s)")
  */
 function formatCooldown(seconds: number): string {
   if (seconds < 60) {
@@ -34,6 +37,18 @@ function formatCooldown(seconds: number): string {
     : `${hours} hour(s)`;
 }
 
+/**
+ * Checks if a user can bypass the cooldown for a command
+ *
+ * Users can bypass cooldowns if:
+ * - The command has no cooldown configured
+ * - Their user ID is in the command's bypassUsers list
+ * - They have a role that's in the command's bypassRoles list
+ *
+ * @param interaction - The chat input interaction
+ * @param command - The command module being executed
+ * @returns True if the user can bypass the cooldown, false otherwise
+ */
 function canBypassCooldown(
   interaction: ChatInputCommandInteraction,
   command: CommandModule
@@ -59,11 +74,18 @@ function canBypassCooldown(
 }
 
 /**
- * Handles chat command interactions
+ * Handles execution of slash commands with cooldown management
  *
- * @param interaction - The chat input interaction
- * @param commandHandlers - Handlers for commands
- * @returns Promise resolving when the chat command is handled
+ * Process:
+ * 1. Retrieves the command handler
+ * 2. Checks if the command is on cooldown (unless user can bypass)
+ * 3. Executes the command if not on cooldown
+ * 4. Sets cooldown after successful execution
+ * 5. Handles errors with ephemeral error messages
+ *
+ * @param interaction - The chat input command interaction
+ * @param commandHandlers - Collection of registered command handlers
+ * @returns Promise that resolves when command handling is complete
  */
 async function handleChatCommands(
   interaction: ChatInputCommandInteraction,
@@ -148,11 +170,13 @@ async function handleChatCommands(
 }
 
 /**
- * Registers the main interaction handler for chat commands
+ * Registers the interaction event handler for the Discord client
  *
- * @param discordClient - The Discord client instance
- * @param commandHandlers - Collection of slash command handlers
- * @returns Promise resolving when the handlers are registered
+ * Sets up a listener for the 'interactionCreate' event that routes
+ * chat input commands to the appropriate handler
+ *
+ * @param discordClient - The Discord.js client instance
+ * @param commandHandlers - Collection of slash command handlers keyed by command name
  */
 export function registerInteractionHandler(
   discordClient: Client,
