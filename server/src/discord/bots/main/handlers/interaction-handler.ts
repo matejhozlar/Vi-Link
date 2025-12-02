@@ -126,7 +126,6 @@ async function handleChatCommands(
         cooldownMessage
       )
         .field("Time Remaining", formatCooldown(cooldownRemaining), true)
-        .field("Cooldown Type", command.cooldown.type, true)
         .build();
 
       await interaction.reply({
