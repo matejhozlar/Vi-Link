@@ -5,7 +5,6 @@ import {
 } from "@/config/minecraft/ranks.config";
 import { minecraftLinkRepository } from "@/db/mc/queries/repository";
 import { Client, GuildMember } from "discord.js";
-import { success } from "zod";
 
 /**
  * Result of a linking attempt
