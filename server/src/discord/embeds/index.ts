@@ -1,3 +1,3 @@
 export { EmbedColors } from "./colors";
 export { EmbedPresets } from "./presets";
-export { createEmbed } from "./embed.builder";
+export { createEmbed } from "./embed-builder";

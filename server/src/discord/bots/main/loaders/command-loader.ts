@@ -1,3 +1,5 @@
+import config from "@/config";
+import { CooldownType } from "@/discord/utils/cooldown/cooldown-manager";
 import {
   ChatInputCommandInteraction,
   Collection,
@@ -6,7 +8,6 @@ import {
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import fs from "node:fs";
-import config from "@/config";
 
 const isDev = config.envMode.isDev;
 
@@ -17,12 +18,22 @@ export interface CommandModule {
   data: SlashCommandBuilder;
   execute: (interaction: ChatInputCommandInteraction) => Promise<void>;
   prodOnly?: boolean;
+
+  // Cooldown configuration
+  cooldown?: {
+    duration: number; // in seconds
+    type: CooldownType;
+    message?: string; // Custom cooldown message
+    bypassRoles?: string[]; // Role IDs that bypass cooldown
+    bypassUsers?: string[]; // User IDs that bypass cooldown
+  };
 }
 
 /**
- * Loads Discord command handlers from discord/commands folder
+ * Loads Discord command handlers
+ * from discord/bots/main/interactions/slash-commands folder
  *
- * @returns commandHandlers
+ * @returns Promise resolving to the commandHandlers
  */
 export async function loadCommandHandlers(): Promise<
   Collection<string, CommandModule>
@@ -54,6 +65,7 @@ export async function loadCommandHandlers(): Promise<
 
       if (!isValid) {
         logger.warn(`Skipped loading file ${file} - missing data or execute()`);
+        continue;
       }
 
       if (isDev && isProdOnly) {
@@ -62,6 +74,12 @@ export async function loadCommandHandlers(): Promise<
       }
 
       commandHandlers.set(commandModule.data.name, commandModule);
+
+      if (commandModule.cooldown) {
+        logger.debug(
+          `Command ${commandModule.data.name} has ${commandModule.cooldown.type} cooldown: ${commandModule.cooldown.duration}s`
+        );
+      }
     } catch (error) {
       logger.error(`Failed to load command ${file}:`, error);
     }

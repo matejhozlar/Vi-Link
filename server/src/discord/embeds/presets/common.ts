@@ -1,4 +1,4 @@
-import { createEmbed } from "../embed.builder";
+import { createEmbed } from "../embed-builder";
 import { EmbedColors } from "../colors";
 
 export const CommonEmbedPresets = {
